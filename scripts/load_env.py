@@ -12,3 +12,4 @@ else:
 
 for key, value in settings.items():
     print(f'export {key}="{value}"')
+    
