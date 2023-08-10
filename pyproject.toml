@@ -1,0 +1,16 @@
+[project]
+name = "pdm-env-starter"
+version = "0.0.0"
+description = ""
+authors = [
+    {name = "tw"},
+]
+dependencies = [
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "UNLICENSED"}
+
+[tool.pdm.scripts]
+"echo:dev" = {shell = ". ./scripts/run_with_env.sh development ./src/echo_env.py"}
+"echo:prod" = {shell = ". ./scripts/run_with_env.sh production ./src/echo_env.py"}
