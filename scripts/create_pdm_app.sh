@@ -23,9 +23,8 @@ starter_name="pdm-env-starter"
 ##
 # |1| Verify dependencies
 
-# TODO: Either determine if rename is perl-rename or replace with generic method
-if ! command -v rename &> /dev/null; then
-  echo -e "Install$cyan rename$color_reset package to continue"
+if ! command -v pdm &> /dev/null; then
+  echo -e "Install pdm-project/${cyan}pdm$color_reset to continue"
   exit 1
 fi
 
@@ -75,9 +74,8 @@ if [[ ! -z "$author_email" ]]; then
   AUTHOR_EMAIL="$author_email"
 fi
 
-###
 ##
-# Get required python version
+# Python version and path
 
 # Helper to append to paths list
 paths=()
@@ -88,18 +86,18 @@ add_to_list() {
   fi
 }
 
-# 1. Check in common directories
+# |1| Check in common directories
 for dir in /usr/local/bin /usr/bin; do
   for py in "$dir"/python*; do
     add_to_list "$py"
   done
 done
 
-# 2. System defaults
+# |2| System defaults
 add_to_list "$(which python 2>/dev/null)"
 add_to_list "$(which python3 2>/dev/null)"
 
-# 3. Pyenv check
+# |3| Pyenv check
 if [ -d "$PYENV_ROOT" ]; then
   if [ -f "$PYENV_ROOT/shims/python3" ]; then
     add_to_list "$PYENV_ROOT/shims/python3"
@@ -125,11 +123,9 @@ for index in "${!options[@]}"; do
   fi
 done
 
-# Get user's choice
+# Get user's choice and check if valid
 echo -ne "Enter the number of the Python interpreter you want to use ${cyan}(0)${color_reset}: "
 read choice
-
-# Check if the choice is valid
 if [[ $choice -lt 0 || $choice -ge ${#options[@]} ]]; then
   echo "Invalid choice!"
   exit 1
@@ -165,16 +161,12 @@ fi
 rm -rf .git
 git init
 
-# Prepare different formats of NAME and DATE
-UNDERSCORED_NAME=${NAME//-/_} # database variables
-PASCAL_CASE_NAME=$(perl -pe 's/(^|-|_)(\w)/\U$2/g' <<<"$NAME") # cdk
-TODAYS_DATE="$(date +'%Y-%m-%d')"
-
 # Reset key files
 rm -f .gitignore
 mv RENAME_TO.gitignore .gitignore
 rm -f CHANGELOG.md
 mv RENAME_TO_CHANGELOG.md CHANGELOG.md
+TODAYS_DATE="$(date +'%Y-%m-%d')"
 perl -i -pe "s#YYYY\-MM\-DD#$TODAYS_DATE#g" CHANGELOG.md
 rm -f THIRD_PARTY_NOTICES.md
 mv RENAME_TO_THIRD_PARTY_NOTICES.md THIRD_PARTY_NOTICES.md
