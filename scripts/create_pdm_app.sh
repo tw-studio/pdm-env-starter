@@ -74,6 +74,7 @@ read author_email
 if [[ ! -z "$author_email" ]]; then
   AUTHOR_EMAIL="$author_email"
 fi
+echo "author email: $AUTHOR_EMAIL"
 
 ###
 ##
@@ -142,8 +143,12 @@ echo -e "${green}You are using PEP 582, no virtualenv is created.$color_reset"
 echo -e "${green}For more info, please visit https://peps.python.org/pep-0582/$color_reset"
 
 # Get required python version
-echo -ne "Require Python version('*' to allow any) ${cyan}(>=${SELECTED_PYTHON_VERSION})${color_reset}: "
-read REQ_PYTHON_VERSION
+REQ_PYTHON_VERSION=">=$SELECTED_PYTHON_VERSION"
+echo -ne "Require Python version('*' to allow any) ${cyan}(${REQ_PYTHON_VERSION})${color_reset}: "
+read read_python_version
+if [[ ! -z "$read_python_version" ]]; then
+  REQ_PYTHON_VERSION="$read_python_version"
+fi
 
 ###
 ##
@@ -179,7 +184,7 @@ perl -i -pe "s#AUTHOR#$AUTHOR_NAME#g" THIRD_PARTY_NOTICES.md
 # pyproject.toml
 perl -i -pe "s#pdm\-env\-starter#$NAME#g" pyproject.toml
 perl -i -pe "s#tw#$AUTHOR_NAME#g" pyproject.toml
-perl -i -pe "s#\<\>#$AUTHOR_EMAIL#g" pyproject.toml
+perl -i -pe "s#\<\>#${AUTHOR_EMAIL//@/\\@}#g" pyproject.toml
 perl -i -pe "s#\>\=3\.11#$REQ_PYTHON_VERSION#g" pyproject.toml
 perl -i -pe "s#UNLICENSED#$LICENSE#g" pyproject.toml
 
