@@ -79,12 +79,10 @@ fi
 ##
 # Get required python version
 
-# Array to hold our discovered Python paths
+# Helper to append to paths list
 paths=()
-
-# Function to append to our list if the path is unique and executable
 add_to_list() {
-  # Ignore paths that end in -config or are not executable
+  # Ignore paths that end in -config or are not executable or unique
   if [[ ! " ${paths[@]} " =~ " $1 " && -x $1 && ! "$1" =~ "-config" ]]; then
     paths+=("$1")
   fi
@@ -137,6 +135,7 @@ if [[ $choice -lt 0 || $choice -ge ${#options[@]} ]]; then
   exit 1
 fi
 
+# Set variables and inform user
 SELECTED_PYTHON_PATH=${options[$choice]}
 SELECTED_PYTHON_VERSION=${versions[$choice]}
 echo -e "${green}You are using PEP 582, no virtualenv is created.$color_reset"
@@ -145,6 +144,10 @@ echo -e "${green}For more info, please visit https://peps.python.org/pep-0582/$c
 # Get required python version
 echo -ne "Require Python version('*' to allow any) ${cyan}(>=${SELECTED_PYTHON_VERSION})${color_reset}: "
 read REQ_PYTHON_VERSION
+
+###
+##
+# |3| Create project from starter
 
 # Clone starter into project directory
 echo ""
@@ -181,24 +184,9 @@ perl -i -pe "s#\>\=3\.11#$REQ_PYTHON_VERSION#g" pyproject.toml
 perl -i -pe "s#UNLICENSED#$LICENSE#g" pyproject.toml
 
 # pdm files
+rm -f pdm.lock
 rm -f .pdm-python
 echo "$SELECTED_PYTHON_PATH" > .pdm-python
 
 # env
-cp env/RENAME_TO_development_secrets.py env/_development_secrets.py
-
-# Creating a pyproject.toml for PDM...
-# Please enter the Python interpreter to use
-# 0. /usr/local/bin/python (3.11)
-# 1. /usr/local/bin/python3.11 (3.11)
-# 2. /usr/local/bin/python3.10 (3.10)
-# 3. /usr/local/bin/python3.9 (3.9)
-# 4. /usr/local/bin/python3.8 (3.8)
-# 5. /usr/bin/python3 (3.8)
-# 6. /usr/local/Cellar/python@3.11/3.11.4_1/Frameworks/Python.framework/Versions/3.11/bin/python3.11 (3.11)
-# Please select (0):
-# Would you like to create a virtualenv with /usr/local/bin/python3.11? [y/n] (y):
-# You are using the PEP 582 mode, no virtualenv is created.
-# For more info, please visit https://peps.python.org/pep-0582/
-# Is the project a library that is installable?
-# If yes, we will need to ask a few more questions to include the project name and build backend [y/n] (n):
+mv env/RENAME_TO_development_secrets.py env/_development_secrets.py

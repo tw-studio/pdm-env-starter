@@ -9,21 +9,15 @@
 .ignore/
 .ignore-*
 
-# Include all env files but not .secrets
+# Include all env/ files but not secrets
 !env/*
-_secrets.py
-_development_secrets.py
-_production_secrets.py
-_staging_secrets.py
-_testing_secrets.py
+env/*_secrets.py
 .env
-.venv
-venv/
 
-# export
-**/out/
-**/export/
+# Out
 **/build/
+**/export/
+**/out/
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
@@ -185,7 +179,6 @@ cdk.out/
 # logs
 **/log/
 **/.log/
-*.log
 
 # misc
 .DS_Store
