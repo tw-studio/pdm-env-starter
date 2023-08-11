@@ -74,7 +74,6 @@ read author_email
 if [[ ! -z "$author_email" ]]; then
   AUTHOR_EMAIL="$author_email"
 fi
-echo "author email: $AUTHOR_EMAIL"
 
 ###
 ##
