@@ -86,6 +86,14 @@ add_to_list() {
   fi
 }
 
+# |0| PDM-managed Python installations
+pdm_root="$HOME/Library/Application Support/pdm/python"
+if [ -d "$pdm_root" ]; then
+  while IFS= read -r py; do
+    add_to_list "$py"
+  done < <(find "$pdm_root" -type f -path "*/bin/python3" -print 2>/dev/null)
+fi
+
 # |1| Check in common directories
 for dir in /usr/local/bin /usr/bin; do
   for py in "$dir"/python*; do
