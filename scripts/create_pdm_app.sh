@@ -80,11 +80,29 @@ fi
 # Helper to append to paths list
 paths=()
 add_to_list() {
-  # Ignore paths that end in -config or are not executable or unique
-  if [[ ! " ${paths[@]} " =~ " $1 " && -x $1 && ! "$1" =~ "-config" ]]; then
-    paths+=("$1")
+  local p="$1"
+
+  # Ignore non-existent/ non-executable paths, -config, and duplicates
+  if [[ -n "$p" && -x "$p" && "$p" != *"-config"* ]]; then
+    for existing in "${paths[@]}"; do
+      [[ "$existing" == "$p" ]] && return 0
+    done
+    paths+=("$p")
   fi
 }
+
+# |0| PDM-managed Python installations
+pdm_root="$HOME/Library/Application Support/pdm/python"
+if [ -d "$pdm_root" ]; then
+  while IFS= read -r py; do
+    add_to_list "$py"
+    done < <(
+        find "$pdm_root" \( -type f -o -type l \) \
+          \( -path "*/bin/python3.[0-9]*" -o -path "*/bin/python3" -o -path "*/bin/python" \) \
+          ! -name "*-config" \
+          -print 2>/dev/null
+    )
+fi
 
 # |1| Check in common directories
 for dir in /usr/local/bin /usr/bin; do
@@ -108,7 +126,6 @@ fi
 
 # Display python interpreters to the user
 options=("${paths[@]}")
-counter=0
 versions=()
 for opt in "${options[@]}"; do
   versions+=( "$("$opt" -c "import sys; print('.'.join(map(str, sys.version_info[:2])))" 2>/dev/null)" )
@@ -118,22 +135,25 @@ for index in "${!options[@]}"; do
   opt="${options[$index]}"
   version="${versions[$index]}"
   if [[ -n $version ]]; then
-    echo -e "$counter) ${green}$opt${color_reset} ($version)"
-    counter=$((counter + 1))
+    echo -e "$index) ${green}$opt${color_reset} ($version)"
   fi
 done
 
 # Get user's choice and check if valid
 echo -ne "Enter the number of the Python interpreter you want to use ${cyan}(0)${color_reset}: "
 read choice
+if [[ -z "${versions[$choice]}" ]]; then
+  echo "Invalid choice!"
+  exit 1
+fi
 if [[ $choice -lt 0 || $choice -ge ${#options[@]} ]]; then
   echo "Invalid choice!"
   exit 1
 fi
 
 # Set variables and inform user
-SELECTED_PYTHON_PATH=${options[$choice]}
-SELECTED_PYTHON_VERSION=${versions[$choice]}
+SELECTED_PYTHON_PATH="${options[$choice]}"
+SELECTED_PYTHON_VERSION="${versions[$choice]}"
 echo -e "${green}You are using PEP 582, no virtualenv is created.$color_reset"
 echo -e "${green}For more info, please visit https://peps.python.org/pep-0582/$color_reset"
 
